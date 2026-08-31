@@ -749,7 +749,8 @@ function InterventionRow({ item, onEdit, onDelete, onTogglePayee, onToggleAFinir
 
   return (
     <div
-      className="grid items-center px-3 py-2.5 text-sm border-b border-[#EFEBE0] last:border-b-0 hover:bg-black/[0.02]"
+      onClick={onEdit}
+      className="grid items-center px-3 py-2.5 text-sm border-b border-[#EFEBE0] last:border-b-0 hover:bg-black/[0.02] cursor-pointer"
       style={{ gridTemplateColumns: ROW_COLUMNS, borderLeft: `4px solid ${leftBar}`, background: bg }}
       title={item.commentaire || ""}
     >
@@ -763,13 +764,13 @@ function InterventionRow({ item, onEdit, onDelete, onTogglePayee, onToggleAFinir
       </span>
       <span className="mono-font font-bold text-right text-[#1A1512]">{formatMontant(item.montant_ttc)}</span>
       <span className="text-xs truncate pr-2">{item.type_reglement}</span>
-      <span className="flex justify-center">
+      <span className="flex justify-center" onClick={(e) => e.stopPropagation()}>
         <input type="checkbox" checked={!!item.payee} onChange={onTogglePayee} />
       </span>
-      <span className="flex justify-center">
+      <span className="flex justify-center" onClick={(e) => e.stopPropagation()}>
         <input type="checkbox" checked={!!item.a_finir} onChange={onToggleAFinir} />
       </span>
-      <span className="flex items-center justify-end gap-1">
+      <span className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <button onClick={onViewAttachments} className="p-1.5 rounded hover:bg-black/5" title="Pièces jointes"><Paperclip className="w-3.5 h-3.5" /></button>
         <button onClick={onEdit} className="p-1.5 rounded hover:bg-black/5" title="Modifier"><Pencil className="w-3.5 h-3.5" /></button>
         <button onClick={onDelete} className="p-1.5 rounded hover:bg-black/5 text-[#B3202F]" title="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
