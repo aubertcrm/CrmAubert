@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { Wrench, Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 
 export default function Login() {
@@ -24,16 +24,23 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F5F3EE] px-4">
-      <div className="bg-white rounded-lg shadow-md border border-[#E3DFD3] p-6 w-full max-w-sm">
-        <div className="flex items-center gap-2 mb-6 justify-center">
-          <div className="bg-[#3B6E8F] p-2 rounded-md">
-            <Wrench className="w-5 h-5 text-white" />
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: "radial-gradient(circle at 20% 0%, #2A1710 0%, #150E0B 55%, #0E0908 100%)" }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl border border-[#E4DCD1] p-7 w-full max-w-sm">
+        <div className="flex flex-col items-center gap-1 mb-7">
+          <div
+            className="w-12 h-12 rounded-xl flex items-center justify-center mb-2 ticket-font text-white font-extrabold text-lg"
+            style={{ background: "linear-gradient(135deg, #FF6B35, #B3202F)" }}
+          >
+            A
           </div>
-          <h1 className="ticket-font text-xl font-bold uppercase">Fiches d'intervention</h1>
+          <h1 className="ticket-font text-2xl font-extrabold tracking-tight">AUBERT <span style={{ color: "#FF6B35" }}>CRM</span></h1>
+          <p className="text-xs text-[#8b8677]">Plomberie · Serrurerie · Vitrerie</p>
         </div>
         {error && (
-          <div className="mb-4 flex items-center gap-2 bg-[#C1495F]/10 border border-[#C1495F]/30 text-[#8f3247] px-3 py-2 rounded-md text-sm">
+          <div className="mb-4 flex items-center gap-2 bg-[#B3202F]/10 border border-[#B3202F]/30 text-[#8f2431] px-3 py-2 rounded-lg text-sm">
             <AlertCircle className="w-4 h-4 shrink-0" /> {error}
           </div>
         )}
@@ -49,7 +56,8 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full mt-2 flex items-center justify-center gap-2 bg-[#3B6E8F] text-white font-semibold py-2 rounded-md hover:brightness-110 disabled:opacity-60"
+            className="w-full mt-2 flex items-center justify-center gap-2 text-white font-semibold py-2.5 rounded-lg hover:brightness-110 disabled:opacity-60 shadow-md"
+            style={{ background: "linear-gradient(135deg, #FF6B35, #E8502A)" }}
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             Se connecter
