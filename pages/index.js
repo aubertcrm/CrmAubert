@@ -428,7 +428,7 @@ export default function CRMInterventions() {
                   <h2 className="ticket-font uppercase text-sm font-bold text-[#8a5a10] mb-2 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#E8A33D]" /> À finir ({aFinirList.length})
                   </h2>
-                  <div className="rounded-lg overflow-hidden border border-[#E4DCD1] bg-white">
+                  <div className="rounded-lg border border-[#E4DCD1] bg-white">
                     {aFinirList.map((item) => (
                       <InterventionRow key={item.id} item={item} onEdit={() => openEditForm(item)} onDelete={() => deleteIntervention(item.id)}
                         onTogglePayee={() => togglePayee(item)} onToggleAFinir={() => toggleAFinir(item)} onViewAttachments={() => setViewingAttachments(item.id)} />
@@ -452,7 +452,7 @@ export default function CRMInterventions() {
                     </button>
                     {isOpen && (
                       <div className="px-3 pb-3">
-                        <div className="rounded-lg overflow-hidden border border-[#E4DCD1]">
+                        <div className="rounded-lg border border-[#E4DCD1]">
                           {items.map((item) => (
                             <InterventionRow key={item.id} item={item} onEdit={() => openEditForm(item)} onDelete={() => deleteIntervention(item.id)}
                               onTogglePayee={() => togglePayee(item)} onToggleAFinir={() => toggleAFinir(item)} onViewAttachments={() => setViewingAttachments(item.id)} />
