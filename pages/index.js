@@ -564,3 +564,216 @@ export default function CRMInterventions() {
                   {form.attachments.map((a, idx) => (
                     <li key={idx} className="flex items-center justify-between bg-[#FAF6F3] rounded px-2 py-1.5 text-xs">
                       <span className="flex items-center gap-1.5 truncate">
+                        {a.type?.includes("pdf") ? <FileText className="w-3.5 h-3.5 shrink-0" /> : <ImageIcon className="w-3.5 h-3.5 shrink-0" />}
+                        <span className="truncate">{a.name}</span>
+                      </span>
+                      <button onClick={() => removeSavedAttachment(idx)} className="text-[#B3202F] shrink-0 ml-2"><X className="w-3.5 h-3.5" /></button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {pendingFiles.length > 0 && (
+                <ul className="mt-2 space-y-1">
+                  {pendingFiles.map((f, idx) => (
+                    <li key={idx} className="flex items-center justify-between bg-[#EDF3F6] rounded px-2 py-1.5 text-xs">
+                      <span className="truncate">{f.name} (à envoyer)</span>
+                      <button onClick={() => removePendingFile(idx)} className="text-[#B3202F] shrink-0 ml-2"><X className="w-3.5 h-3.5" /></button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-[#E4DCD1]">
+            <button onClick={closeForm} className="px-4 py-2 rounded-md text-sm font-medium text-[#5c584d] hover:bg-[#FAF6F3]">Annuler</button>
+            <button onClick={saveForm} disabled={saving} className="px-4 py-2 rounded-md text-sm font-semibold bg-[#FF6B35] text-white hover:brightness-110 flex items-center gap-2 disabled:opacity-60">
+              {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              Enregistrer
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {showSettings && (
+        <Modal onClose={() => setShowSettings(false)} title="Paramètres — listes déroulantes">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <h3 className="ticket-font uppercase font-bold text-sm mb-2">Techniciens</h3>
+              <div className="flex gap-2 mb-2">
+                <input className="input" value={newTechnicien} onChange={(e) => setNewTechnicien(e.target.value)} placeholder="Nom du technicien" />
+                <button onClick={addTechnicien} className="px-3 rounded-md bg-[#FF6B35] text-white"><Plus className="w-4 h-4" /></button>
+              </div>
+              <ul className="space-y-1">
+                {techniciens.map((t) => (
+                  <li key={t} className="flex items-center justify-between bg-[#FAF6F3] rounded px-2 py-1.5 text-sm">
+                    {t}
+                    <button onClick={() => removeTechnicien(t)} className="text-[#B3202F]"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </li>
+                ))}
+                {techniciens.length === 0 && <p className="text-xs text-[#8b8677]">Aucun technicien pour l'instant.</p>}
+              </ul>
+            </div>
+            <div>
+              <h3 className="ticket-font uppercase font-bold text-sm mb-2">Agences</h3>
+              <div className="flex gap-2 mb-2">
+                <input className="input" value={newAgence} onChange={(e) => setNewAgence(e.target.value)} placeholder="Ville / agence" />
+                <button onClick={addAgence} className="px-3 rounded-md bg-[#FF6B35] text-white"><Plus className="w-4 h-4" /></button>
+              </div>
+              <ul className="space-y-1">
+                {agences.map((a) => (
+                  <li key={a} className="flex items-center justify-between bg-[#FAF6F3] rounded px-2 py-1.5 text-sm">
+                    {a}
+                    <button onClick={() => removeAgence(a)} className="text-[#B3202F]"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </li>
+                ))}
+                {agences.length === 0 && <p className="text-xs text-[#8b8677]">Aucune agence pour l'instant.</p>}
+              </ul>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {viewingAttachments && (
+        <Modal onClose={() => setViewingAttachments(null)} title="Pièces jointes">
+          {(() => {
+            const item = interventions.find((i) => i.id === viewingAttachments);
+            const atts = item?.attachments || [];
+            if (atts.length === 0) return <p className="text-sm text-[#8b8677]">Aucune pièce jointe pour cette intervention.</p>;
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {atts.map((a, idx) => (
+                  <a key={idx} href={a.url} target="_blank" rel="noreferrer" className="border border-[#E4DCD1] rounded-md p-2 flex flex-col items-center gap-1.5 hover:border-[#FF6B35]">
+                    {a.type?.startsWith("image/") ? (
+                      <img src={a.url} alt={a.name} className="w-full h-20 object-cover rounded" />
+                    ) : (
+                      <FileText className="w-8 h-8 text-[#FF6B35]" />
+                    )}
+                    <span className="text-[11px] text-center truncate w-full">{a.name}</span>
+                  </a>
+                ))}
+              </div>
+            );
+          })()}
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+function StatsBar({ interventions }) {
+  const now = new Date();
+  const curKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const thisMonth = interventions.filter((i) => monthKey(i.date_intervention) === curKey);
+  const montantMois = thisMonth.reduce((s, i) => s + (parseFloat(i.montant_ttc) || 0), 0);
+  const enAttente = interventions.filter((i) => i.type_reglement === "En attente de règlement" && !i.payee).length;
+  const aFinir = interventions.filter((i) => i.a_finir).length;
+
+  const cards = [
+    { label: "Interventions ce mois", value: thisMonth.length, icon: ListChecks, color: "#FF6B35" },
+    { label: "Chiffre du mois", value: formatMontant(montantMois), icon: TrendingUp, color: "#1A1512" },
+    { label: "En attente de règlement", value: enAttente, icon: Clock, color: "#B3202F" },
+    { label: "À finir", value: aFinir, icon: AlertTriangle, color: "#C97A0E" },
+  ];
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+      {cards.map((c) => (
+        <div key={c.label} className="bg-white rounded-xl border border-[#E4DCD1] shadow-sm p-3.5 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${c.color}1A` }}>
+            <c.icon className="w-4.5 h-4.5" style={{ color: c.color }} />
+          </div>
+          <div className="min-w-0">
+            <p className="mono-font text-lg font-bold leading-none truncate" style={{ color: c.color }}>{c.value}</p>
+            <p className="text-[11px] text-[#8b8677] mt-1 truncate">{c.label}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Field({ label, children, error, span2 }) {
+  return (
+    <div className={span2 ? "sm:col-span-2" : ""}>
+      {label && <label className={`text-xs font-medium block mb-1 ${error ? "text-[#B3202F]" : "text-[#5c584d]"}`}>{label}</label>}
+      {children}
+    </div>
+  );
+}
+
+function Modal({ title, onClose, children }) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-start sm:items-center justify-center z-30 p-3 overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-2xl w-full my-6 shadow-xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E4DCD1] sticky top-0 bg-white rounded-t-lg">
+          <h2 className="ticket-font uppercase text-lg font-bold">{title}</h2>
+          <button onClick={onClose} className="p-1 rounded hover:bg-[#FAF6F3]"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="px-5 py-4">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+const ROW_COLUMNS = "100px minmax(180px,1.6fr) 130px 130px 150px 100px 150px 70px 70px 100px";
+
+function RowHeader() {
+  return (
+    <div
+      className="grid items-center px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-[#8b8677] border-b-2 border-[#E4DCD1]"
+      style={{ gridTemplateColumns: ROW_COLUMNS }}
+    >
+      <span>Date</span>
+      <span>Client</span>
+      <span>Technicien</span>
+      <span>Agence</span>
+      <span>Type / Mission</span>
+      <span className="text-right">Montant</span>
+      <span>Règlement</span>
+      <span className="text-center">Payée</span>
+      <span className="text-center">À finir</span>
+      <span className="text-right">Actions</span>
+    </div>
+  );
+}
+
+function InterventionRow({ item, onEdit, onDelete, onTogglePayee, onToggleAFinir, onViewAttachments }) {
+  const attente = item.type_reglement === "En attente de règlement" && !item.payee;
+  let leftBar = "transparent";
+  let bg = "white";
+  if (item.a_finir) { leftBar = "#E8A33D"; bg = "#FDF6E8"; }
+  else if (attente) { leftBar = "#B3202F"; bg = "#FBEDEF"; }
+
+  const dateFmt = item.date_intervention ? new Date(item.date_intervention).toLocaleDateString("fr-FR") : "—";
+
+  return (
+    <div
+      className="grid items-center px-3 py-2.5 text-sm border-b border-[#EFEBE0] last:border-b-0 hover:bg-black/[0.02]"
+      style={{ gridTemplateColumns: ROW_COLUMNS, borderLeft: `4px solid ${leftBar}`, background: bg }}
+      title={item.commentaire || ""}
+    >
+      <span className="text-xs text-[#5c584d]">{dateFmt}</span>
+      <span className="font-semibold truncate pr-2" title={item.client_nom}>{item.client_nom}</span>
+      <span className="text-xs truncate pr-2">{item.technicien}</span>
+      <span className="text-xs truncate pr-2">{item.agence}</span>
+      <span className="text-xs truncate pr-2">
+        <span className="px-1.5 py-0.5 rounded bg-[#EDEAE0] text-[#5c584d] mr-1">{item.type_intervention}</span>
+        <span className="text-[#8b8677]">{item.mission}</span>
+      </span>
+      <span className="mono-font font-bold text-right text-[#1A1512]">{formatMontant(item.montant_ttc)}</span>
+      <span className="text-xs truncate pr-2">{item.type_reglement}</span>
+      <span className="flex justify-center">
+        <input type="checkbox" checked={!!item.payee} onChange={onTogglePayee} />
+      </span>
+      <span className="flex justify-center">
+        <input type="checkbox" checked={!!item.a_finir} onChange={onToggleAFinir} />
+      </span>
+      <span className="flex items-center justify-end gap-1">
+        <button onClick={onViewAttachments} className="p-1.5 rounded hover:bg-black/5" title="Pièces jointes"><Paperclip className="w-3.5 h-3.5" /></button>
+        <button onClick={onEdit} className="p-1.5 rounded hover:bg-black/5" title="Modifier"><Pencil className="w-3.5 h-3.5" /></button>
+        <button onClick={onDelete} className="p-1.5 rounded hover:bg-black/5 text-[#B3202F]" title="Supprimer"><Trash2 className="w-3.5 h-3.5" /></button>
+      </span>
+    </div>
+  );
+}
