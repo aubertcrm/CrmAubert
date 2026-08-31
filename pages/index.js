@@ -35,6 +35,7 @@ export default function CRMInterventions() {
   const [filters, setFilters] = useState({
     technicien: "", agence: "", nom: "", numDevis: "", numFacture: "",
     typeReglement: "", aFinirOnly: false, dateFrom: "", dateTo: "",
+    origine: "", montantMin: "", montantMax: "",
   });
 
   const [expandedMonths, setExpandedMonths] = useState({});
@@ -244,6 +245,9 @@ export default function CRMInterventions() {
       if (filters.numDevis && !i.num_devis?.toLowerCase().includes(filters.numDevis.toLowerCase())) return false;
       if (filters.numFacture && !i.num_facture?.toLowerCase().includes(filters.numFacture.toLowerCase())) return false;
       if (filters.typeReglement && i.type_reglement !== filters.typeReglement) return false;
+      if (filters.origine && i.origine !== filters.origine) return false;
+      if (filters.montantMin && (parseFloat(i.montant_ttc) || 0) < parseFloat(filters.montantMin)) return false;
+      if (filters.montantMax && (parseFloat(i.montant_ttc) || 0) > parseFloat(filters.montantMax)) return false;
       if (filters.aFinirOnly && !i.a_finir) return false;
       if (filters.dateFrom && i.date_intervention < filters.dateFrom) return false;
       if (filters.dateTo && i.date_intervention > filters.dateTo) return false;
@@ -372,6 +376,18 @@ export default function CRMInterventions() {
                   {REGLEMENT_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </Field>
+              <Field label="Origine">
+                <select className="input" value={filters.origine} onChange={(e) => setFilters((f) => ({ ...f, origine: e.target.value }))}>
+                  <option value="">Toutes</option>
+                  {ORIGINE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </Field>
+              <Field label="Montant min (€)">
+                <input type="number" step="0.01" className="input" value={filters.montantMin} onChange={(e) => setFilters((f) => ({ ...f, montantMin: e.target.value }))} />
+              </Field>
+              <Field label="Montant max (€)">
+                <input type="number" step="0.01" className="input" value={filters.montantMax} onChange={(e) => setFilters((f) => ({ ...f, montantMax: e.target.value }))} />
+              </Field>
               <Field label="Du">
                 <input type="date" className="input" value={filters.dateFrom} onChange={(e) => setFilters((f) => ({ ...f, dateFrom: e.target.value }))} />
               </Field>
@@ -384,7 +400,7 @@ export default function CRMInterventions() {
               </label>
               {activeFilterCount > 0 && (
                 <button
-                  onClick={() => setFilters({ technicien: "", agence: "", nom: "", numDevis: "", numFacture: "", typeReglement: "", aFinirOnly: false, dateFrom: "", dateTo: "" })}
+                  onClick={() => setFilters({ technicien: "", agence: "", nom: "", numDevis: "", numFacture: "", typeReglement: "", aFinirOnly: false, dateFrom: "", dateTo: "", origine: "", montantMin: "", montantMax: "" })}
                   className="text-sm text-[#FF6B35] underline self-end mb-1"
                 >
                   Réinitialiser
@@ -716,7 +732,7 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-const ROW_COLUMNS = "100px minmax(180px,1.6fr) 130px 130px 150px 100px 150px 70px 70px 100px";
+const ROW_COLUMNS = "90px minmax(160px,1.4fr) 110px 70px 70px 120px 120px 150px 130px 100px";
 
 function RowHeader() {
   return (
@@ -726,13 +742,13 @@ function RowHeader() {
     >
       <span>Date</span>
       <span>Client</span>
+      <span className="text-right">Montant</span>
+      <span className="text-center">Payée</span>
+      <span className="text-center">À finir</span>
       <span>Technicien</span>
       <span>Agence</span>
       <span>Type / Mission</span>
-      <span className="text-right">Montant</span>
       <span>Règlement</span>
-      <span className="text-center">Payée</span>
-      <span className="text-center">À finir</span>
       <span className="text-right">Actions</span>
     </div>
   );
@@ -756,20 +772,20 @@ function InterventionRow({ item, onEdit, onDelete, onTogglePayee, onToggleAFinir
     >
       <span className="text-xs text-[#5c584d]">{dateFmt}</span>
       <span className="font-semibold truncate pr-2" title={item.client_nom}>{item.client_nom}</span>
+      <span className="mono-font font-bold text-right text-[#1A1512]">{formatMontant(item.montant_ttc)}</span>
+      <span className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+        <input type="checkbox" checked={!!item.payee} onChange={onTogglePayee} className="w-5 h-5" />
+      </span>
+      <span className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+        <input type="checkbox" checked={!!item.a_finir} onChange={onToggleAFinir} className="w-5 h-5" />
+      </span>
       <span className="text-xs truncate pr-2">{item.technicien}</span>
       <span className="text-xs truncate pr-2">{item.agence}</span>
       <span className="text-xs truncate pr-2">
         <span className="px-1.5 py-0.5 rounded bg-[#EDEAE0] text-[#5c584d] mr-1">{item.type_intervention}</span>
         <span className="text-[#8b8677]">{item.mission}</span>
       </span>
-      <span className="mono-font font-bold text-right text-[#1A1512]">{formatMontant(item.montant_ttc)}</span>
       <span className="text-xs truncate pr-2">{item.type_reglement}</span>
-      <span className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-        <input type="checkbox" checked={!!item.payee} onChange={onTogglePayee} />
-      </span>
-      <span className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-        <input type="checkbox" checked={!!item.a_finir} onChange={onToggleAFinir} />
-      </span>
       <span className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
         <button onClick={onViewAttachments} className="p-1.5 rounded hover:bg-black/5" title="Pièces jointes"><Paperclip className="w-3.5 h-3.5" /></button>
         <button onClick={onEdit} className="p-1.5 rounded hover:bg-black/5" title="Modifier"><Pencil className="w-3.5 h-3.5" /></button>
