@@ -87,15 +87,35 @@ export default function CRMInterventions() {
   /* ----- Listes techniciens / agences ----- */
   const addTechnicien = async () => {
     const v = newTechnicien.trim();
-    if (!v || techniciens.includes(v)) return;
-    const { error } = await supabase.from("techniciens").insert({ nom: v });
-    if (!error) { setTechniciens((p) => [...p, v]); setNewTechnicien(""); }
+    if (!v) return;
+    if (techniciens.some((t) => t.toLowerCase() === v.toLowerCase())) {
+      setError(`"${v}" est déjà dans la liste des techniciens.`);
+      return;
+    }
+    const { error: err } = await supabase.from("techniciens").insert({ nom: v });
+    if (err) {
+      setError(`Impossible d'ajouter le technicien : ${err.message}`);
+      return;
+    }
+    setTechniciens((p) => [...p, v]);
+    setNewTechnicien("");
+    setError("");
   };
   const addAgence = async () => {
     const v = newAgence.trim();
-    if (!v || agences.includes(v)) return;
-    const { error } = await supabase.from("agences").insert({ nom: v });
-    if (!error) { setAgences((p) => [...p, v]); setNewAgence(""); }
+    if (!v) return;
+    if (agences.some((a) => a.toLowerCase() === v.toLowerCase())) {
+      setError(`"${v}" est déjà dans la liste des agences.`);
+      return;
+    }
+    const { error: err } = await supabase.from("agences").insert({ nom: v });
+    if (err) {
+      setError(`Impossible d'ajouter l'agence : ${err.message}`);
+      return;
+    }
+    setAgences((p) => [...p, v]);
+    setNewAgence("");
+    setError("");
   };
   const removeTechnicien = async (v) => {
     await supabase.from("techniciens").delete().eq("nom", v);
@@ -309,7 +329,7 @@ export default function CRMInterventions() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => setShowSettings(true)} className="p-2 rounded-lg hover:bg-white/10" aria-label="Paramètres">
+            <button onClick={() => { setError(""); setShowSettings(true); }} className="p-2 rounded-lg hover:bg-white/10" aria-label="Paramètres">
               <Settings className="w-5 h-5" />
             </button>
             <button onClick={handleLogout} className="p-2 rounded-lg hover:bg-white/10" aria-label="Déconnexion">
@@ -613,6 +633,11 @@ export default function CRMInterventions() {
 
       {showSettings && (
         <Modal onClose={() => setShowSettings(false)} title="Paramètres — listes déroulantes">
+          {error && (
+            <div className="mb-4 flex items-center gap-2 bg-[#B3202F]/10 border border-[#B3202F]/30 text-[#8f3247] px-3 py-2 rounded-md text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0" /> {error}
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <h3 className="ticket-font uppercase font-bold text-sm mb-2">Techniciens</h3>
