@@ -745,7 +745,7 @@ function Field({ label, children, error, span2 }) {
 
 function Modal({ title, onClose, children }) {
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-start sm:items-center justify-center z-30 p-3 overflow-y-auto">
+      <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-30 p-3 py-8 overflow-y-auto">
       <div className="bg-white rounded-lg max-w-2xl w-full my-6 shadow-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#E4DCD1] sticky top-0 bg-white rounded-t-lg">
           <h2 className="ticket-font uppercase text-lg font-bold">{title}</h2>
